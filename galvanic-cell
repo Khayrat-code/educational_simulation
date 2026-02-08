@@ -1,0 +1,1300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Galvanic Cell Simulation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            color: #fff;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 10px;
+            color: #ffd700;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            font-size: 28px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #aaa;
+            margin-bottom: 20px;
+            font-size: 14px;
+            font-family: 'Courier New', monospace;
+        }
+
+        #simulationContainer {
+            position: relative;
+            background: rgba(255,255,255,0.05);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+
+        canvas {
+            border-radius: 10px;
+            background: linear-gradient(180deg, #e8f4f8 0%, #d0e8f0 100%);
+            display: block;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        button {
+            padding: 12px 30px;
+            font-size: 16px;
+            font-weight: bold;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        #startBtn {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+        }
+
+        #startBtn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(40, 167, 69, 0.4);
+        }
+
+        #pauseBtn {
+            background: linear-gradient(135deg, #dc3545, #fd7e14);
+            color: white;
+        }
+
+        #pauseBtn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(220, 53, 69, 0.4);
+        }
+
+        #resetBtn {
+            background: linear-gradient(135deg, #6c757d, #495057);
+            color: white;
+        }
+
+        #resetBtn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(108, 117, 125, 0.4);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .stats-panel {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .stat-box {
+            background: rgba(255,255,255,0.1);
+            padding: 10px 20px;
+            border-radius: 10px;
+            text-align: center;
+            min-width: 120px;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: #aaa;
+            text-transform: uppercase;
+        }
+
+        .stat-value {
+            font-size: 18px;
+            font-weight: bold;
+            color: #ffd700;
+            margin-top: 5px;
+        }
+
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+            max-width: 1000px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255,255,255,0.1);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 13px;
+        }
+
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            border: 2px solid rgba(255,255,255,0.3);
+        }
+
+        .info-panel {
+            margin-top: 20px;
+            background: rgba(255,255,255,0.08);
+            padding: 20px;
+            border-radius: 10px;
+            max-width: 1000px;
+            text-align: left;
+        }
+
+        .info-panel h3 {
+            color: #ffd700;
+            margin-bottom: 15px;
+            font-size: 18px;
+            text-align: center;
+        }
+
+        .reaction-equations {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 15px;
+        }
+
+        .reaction-box {
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid;
+        }
+
+        .anode-box {
+            border-left-color: #dc3545;
+        }
+
+        .cathode-box {
+            border-left-color: #28a745;
+        }
+
+        .reaction-title {
+            font-weight: bold;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .reaction-eq {
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            color: #ddd;
+        }
+
+        .explanation {
+            color: #ccc;
+            font-size: 13px;
+            line-height: 1.6;
+            margin-top: 10px;
+        }
+
+        .credits {
+            margin-top: 20px;
+            color: #666;
+            font-size: 12px;
+        }
+
+        .highlight {
+            color: #ffd700;
+            font-weight: bold;
+        }
+    </style>
+<base target="_blank">
+</head>
+<body>
+    <h1> Advanced Galvanic Cell Simulation, by Khayrat, for Batteries course </h1>
+    <p class="subtitle">Zn(s) | Zn²⁺(aq) || Cu²⁺(aq) | Cu(s) &nbsp;&nbsp;|&nbsp;&nbsp; E°cell = +1.10V</p>
+
+    <div id="simulationContainer">
+        <canvas id="simCanvas" width="1000" height="600"></canvas>
+    </div>
+
+    <div class="stats-panel">
+        <div class="stat-box">
+            <div class="stat-label">Cell Voltage</div>
+            <div class="stat-value" id="voltageDisplay">1.10 V</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-label">Zn Electrode</div>
+            <div class="stat-value" id="znMassDisplay">100%</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-label">Cu Electrode</div>
+            <div class="stat-value" id="cuMassDisplay">100%</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-label">Electrons Transferred</div>
+            <div class="stat-value" id="electronCount">0</div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <button id="startBtn">▶ Start Reaction</button>
+        <button id="pauseBtn" disabled>⏸ Pause</button>
+        <button id="resetBtn">↺ Reset</button>
+    </div>
+
+    <div class="legend">
+        <div class="legend-item">
+            <div class="legend-color" style="background: #FFD700;"></div>
+            <span>Electrons (e⁻)</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #808080;"></div>
+            <span>Zn Atoms (Anode)</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #4169E1;"></div>
+            <span>Zn²⁺ Ions</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #B87333;"></div>
+            <span>Cu Atoms (Cathode)</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #1E90FF;"></div>
+            <span>Cu²⁺ Ions</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #9932CC;"></div>
+            <span>K⁺ Ions ( migrate to cathode)</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #32CD32;"></div>
+            <span>NO₃⁻ Ions (migrate to anode)</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #FF6347;"></div>
+            <span>SO₄²⁻ Ions</span>
+        </div>
+    </div>
+
+    <div class="info-panel">
+        <h3> Detailed Reaction Mechanism</h3>
+        <div class="reaction-equations">
+            <div class="reaction-box anode-box">
+                <div class="reaction-title" style="color: #ff6b6b;">ANODE (Oxidation - Negative)</div>
+                <div class="reaction-eq">Zn(s) → Zn²⁺(aq) + 2e⁻</div>
+                <div class="explanation">
+                    • Zn metal <span class="highlight">loses electrons</span><br>
+                    • Electrode <span class="highlight">decreases in size</span> (corrosion)<br>
+                    • Zn²⁺ enters solution, increasing positive charge
+                </div>
+            </div>
+            <div class="reaction-box cathode-box">
+                <div class="reaction-title" style="color: #51cf66;">CATHODE (Reduction - Positive)</div>
+                <div class="reaction-eq">Cu²⁺(aq) + 2e⁻ → Cu(s)</div>
+                <div class="explanation">
+                    • Cu²⁺ ions <span class="highlight">gain electrons</span><br>
+                    • Electrode <span class="highlight">increases in size</span> (plating)<br>
+                    • Cu deposits as solid metal
+                </div>
+            </div>
+        </div>
+        <div class="explanation" style="background: rgba(255,215,0,0.1); padding: 15px; border-radius: 8px; border: 1px solid rgba(255,215,0,0.3);">
+            <strong> Salt Bridge Function:</strong> As Zn²⁺ builds up in the anode compartment (positive charge increase) and Cu²⁺ is consumed in the cathode compartment (positive charge decrease), 
+            <span class="highlight">K⁺ ions migrate to the cathode</span> to maintain charge neutrality, while 
+            <span class="highlight">NO₃⁻ ions migrate to the anode</span>. This ion flow completes the electrical circuit and prevents charge buildup that would stop the reaction.
+        </div>
+    </div>
+
+    <p class="credits">Educational Simulation | rate me on Github: https://github.com/Khayrat-code/</p>
+
+    <script>
+        const canvas = document.getElementById('simCanvas');
+        const ctx = canvas.getContext('2d');
+        const startBtn = document.getElementById('startBtn');
+        const pauseBtn = document.getElementById('pauseBtn');
+        const resetBtn = document.getElementById('resetBtn');
+
+        // Simulation state
+        let isRunning = false;
+        let animationId = null;
+        let frameCount = 0;
+        let voltage = 1.10;
+        let electronTransferCount = 0;
+        let znMassPercent = 100;
+        let cuMassPercent = 100;
+
+        // Constants
+        const BEAKER_LEFT_X = 150;
+        const BEAKER_RIGHT_X = 650;
+        const BEAKER_Y = 320;
+        const BEAKER_WIDTH = 200;
+        const BEAKER_HEIGHT = 220;
+        const SOLUTION_LEVEL = 180;
+        const ELECTRODE_WIDTH = 50;
+        const ELECTRODE_HEIGHT_INITIAL = 140;
+        const MAX_ELECTRODE_CHANGE = 40; // Maximum pixels electrode can grow/shrink
+
+        // Colors
+        const COLORS = {
+            ZnSolid: '#708090',
+            ZnIon: '#4169E1',
+            CuSolid: '#B87333',
+            CuIon: '#1E90FF',
+            electron: '#FFD700',
+            K_ion: '#9932CC',
+            NO3_ion: '#32CD32',
+            SO4_ion: '#FF6347',
+            solutionZn: 'rgba(200, 200, 220, 0.3)',
+            solutionCu: 'rgba(200, 220, 255, 0.3)',
+            saltBridge: 'rgba(255, 255, 200, 0.7)',
+            wire: '#444',
+            bulbOn: '#FFD700',
+            bulbOff: '#666'
+        };
+
+        // Particle arrays
+        let electrons = [];
+        let znIons = [];
+        let cuIons = [];
+        let kIons = [];
+        let no3Ions = [];
+        let so4Ions = [];
+        let znSurfaceAtoms = [];
+        let cuSurfaceAtoms = [];
+        let migratedIons = []; // Track ions that have crossed
+
+        // Electrode dimensions
+        let znElectrode = {
+            x: BEAKER_LEFT_X + 25,
+            y: BEAKER_Y + 20,
+            width: ELECTRODE_WIDTH,
+            height: ELECTRODE_HEIGHT_INITIAL,
+            originalHeight: ELECTRODE_HEIGHT_INITIAL,
+            mass: 100
+        };
+
+        let cuElectrode = {
+            x: BEAKER_RIGHT_X + BEAKER_WIDTH - 75,
+            y: BEAKER_Y + 20,
+            width: ELECTRODE_WIDTH,
+            height: ELECTRODE_HEIGHT_INITIAL,
+            originalHeight: ELECTRODE_HEIGHT_INITIAL,
+            mass: 100
+        };
+
+        // Initialize particles
+        function initializeParticles() {
+            electrons = [];
+            znIons = [];
+            cuIons = [];
+            kIons = [];
+            no3Ions = [];
+            so4Ions = [];
+            znSurfaceAtoms = [];
+            cuSurfaceAtoms = [];
+            migratedIons = [];
+
+            // Create Zn surface atoms (grid pattern)
+            for (let i = 0; i < 10; i++) {
+                for (let j = 0; j < 4; j++) {
+                    znSurfaceAtoms.push({
+                        x: znElectrode.x + 6 + j * 12,
+                        y: znElectrode.y + znElectrode.height - 8 - i * 12,
+                        active: true,
+                        shaking: 0,
+                        layer: i
+                    });
+                }
+            }
+
+            // Create Cu surface atoms
+            for (let i = 0; i < 10; i++) {
+                for (let j = 0; j < 4; j++) {
+                    cuSurfaceAtoms.push({
+                        x: cuElectrode.x + 6 + j * 12,
+                        y: cuElectrode.y + cuElectrode.height - 8 - i * 12,
+                        active: true,
+                        layer: i
+                    });
+                }
+            }
+
+            // Create initial Cu²⁺ ions
+            for (let i = 0; i < 18; i++) {
+                cuIons.push(createCuIon());
+            }
+
+            // Create SO₄²⁻ ions in both solutions
+            for (let i = 0; i < 8; i++) {
+                so4Ions.push({
+                    x: BEAKER_LEFT_X + 30 + Math.random() * (BEAKER_WIDTH - 60),
+                    y: BEAKER_Y + 60 + Math.random() * (SOLUTION_LEVEL - 80),
+                    vx: (Math.random() - 0.5) * 0.3,
+                    vy: (Math.random() - 0.5) * 0.3,
+                    type: 'SO4',
+                    beaker: 'left'
+                });
+            }
+            for (let i = 0; i < 8; i++) {
+                so4Ions.push({
+                    x: BEAKER_RIGHT_X + 30 + Math.random() * (BEAKER_WIDTH - 60),
+                    y: BEAKER_Y + 60 + Math.random() * (SOLUTION_LEVEL - 80),
+                    vx: (Math.random() - 0.5) * 0.3,
+                    vy: (Math.random() - 0.5) * 0.3,
+                    type: 'SO4',
+                    beaker: 'right'
+                });
+            }
+
+            // Create salt bridge ions
+            for (let i = 0; i < 8; i++) {
+                kIons.push(createSaltBridgeIon('K', i));
+                no3Ions.push(createSaltBridgeIon('NO3', i));
+            }
+
+            // Reset electrode dimensions
+            znElectrode.height = ELECTRODE_HEIGHT_INITIAL;
+            znElectrode.y = BEAKER_Y + 20;
+            znElectrode.mass = 100;
+
+            cuElectrode.height = ELECTRODE_HEIGHT_INITIAL;
+            cuElectrode.y = BEAKER_Y + 20;
+            cuElectrode.mass = 100;
+
+            voltage = 1.10;
+            electronTransferCount = 0;
+            znMassPercent = 100;
+            cuMassPercent = 100;
+            frameCount = 0;
+
+            updateStats();
+        }
+
+        function createCuIon() {
+            return {
+                x: BEAKER_RIGHT_X + 30 + Math.random() * (BEAKER_WIDTH - 60),
+                y: BEAKER_Y + 60 + Math.random() * (SOLUTION_LEVEL - 100),
+                vx: (Math.random() - 0.5) * 0.5,
+                vy: (Math.random() - 0.5) * 0.5,
+                state: 'free',
+                targetElectrode: false
+            };
+        }
+
+        function createSaltBridgeIon(type, index) {
+            const bridgeWidth = BEAKER_RIGHT_X - (BEAKER_LEFT_X + BEAKER_WIDTH);
+            const x = BEAKER_LEFT_X + BEAKER_WIDTH - 20 + Math.random() * (bridgeWidth + 40);
+            const y = BEAKER_Y - 50 + Math.random() * 40;
+            return {
+                x: x,
+                y: y,
+                vx: 0,
+                vy: 0,
+                type: type,
+                inBridge: true,
+                migrating: false,
+                targetX: null,
+                targetY: null,
+                id: index
+            };
+        }
+
+        function updateStats() {
+            document.getElementById('voltageDisplay').textContent = voltage.toFixed(2) + ' V';
+            document.getElementById('znMassDisplay').textContent = znMassPercent.toFixed(1) + '%';
+            document.getElementById('cuMassDisplay').textContent = cuMassPercent.toFixed(1) + '%';
+            document.getElementById('electronCount').textContent = electronTransferCount;
+        }
+
+        // Drawing functions
+        function drawBeaker(x, y, width, height, solutionColor, label, charge) {
+            // Glass effect
+            ctx.strokeStyle = '#444';
+            ctx.lineWidth = 3;
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+            ctx.lineTo(x, y + height);
+            ctx.lineTo(x + width, y + height);
+            ctx.lineTo(x + width, y);
+            ctx.stroke();
+            ctx.fill();
+
+            // Solution
+            ctx.fillStyle = solutionColor;
+            ctx.fillRect(x + 3, y + height - SOLUTION_LEVEL, width - 6, SOLUTION_LEVEL - 3);
+
+            // Solution surface
+            ctx.strokeStyle = 'rgba(100, 100, 100, 0.5)';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(x + 3, y + height - SOLUTION_LEVEL);
+            ctx.lineTo(x + width - 3, y + height - SOLUTION_LEVEL);
+            ctx.stroke();
+
+            // Label
+            ctx.fillStyle = '#333';
+            ctx.font = 'bold 14px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(label, x + width / 2, y + height + 25);
+
+            // Charge indicator
+            if (isRunning) {
+                ctx.fillStyle = charge > 0 ? '#d00' : (charge < 0 ? '#00d' : '#666');
+                ctx.font = 'bold 12px Arial';
+                const chargeText = charge > 0 ? '+' : (charge < 0 ? '-' : 'neutral');
+                ctx.fillText(`Charge: ${chargeText}`, x + width / 2, y + height + 42);
+            }
+        }
+
+        function drawElectrode(electrode, color, label, isAnode) {
+            // Gradient for 3D effect
+            const gradient = ctx.createLinearGradient(electrode.x, 0, electrode.x + electrode.width, 0);
+            gradient.addColorStop(0, color);
+            gradient.addColorStop(0.5, lightenColor(color, 20));
+            gradient.addColorStop(1, darkenColor(color, 20));
+
+            ctx.fillStyle = gradient;
+            ctx.fillRect(electrode.x, electrode.y, electrode.width, electrode.height);
+
+            // Border
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(electrode.x, electrode.y, electrode.width, electrode.height);
+
+            // Surface texture
+            ctx.fillStyle = 'rgba(255,255,255,0.1)';
+            for (let i = 0; i < 5; i++) {
+                ctx.fillRect(electrode.x + 5 + i * 10, electrode.y + 10, 3, electrode.height - 20);
+            }
+
+            // Label
+            ctx.fillStyle = '#fff';
+            ctx.font = 'bold 14px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(label, electrode.x + electrode.width / 2, electrode.y + electrode.height / 2);
+
+            // Size change indicator
+            const change = isAnode ? 
+                (ELECTRODE_HEIGHT_INITIAL - electrode.height) : 
+                (electrode.height - ELECTRODE_HEIGHT_INITIAL);
+
+            if (Math.abs(change) > 2) {
+                ctx.fillStyle = isAnode ? '#ff6b6b' : '#51cf66';
+                ctx.font = 'bold 11px Arial';
+                const arrow = isAnode ? '↓' : '↑';
+                ctx.fillText(`${arrow} ${Math.abs(change).toFixed(0)}px`, 
+                    electrode.x + electrode.width / 2, 
+                    isAnode ? electrode.y + electrode.height + 15 : electrode.y - 8);
+            }
+        }
+
+        function lightenColor(color, percent) {
+            // Simple color lightening
+            return color;
+        }
+
+        function darkenColor(color, percent) {
+            return color;
+        }
+
+        function drawSaltBridge() {
+            const bridgeY = BEAKER_Y - 60;
+            const bridgeHeight = 60;
+
+            // Left arm (in Zn solution)
+            ctx.fillStyle = COLORS.saltBridge;
+            ctx.fillRect(BEAKER_LEFT_X + BEAKER_WIDTH - 25, bridgeY + 20, 25, bridgeHeight);
+            ctx.strokeStyle = '#444';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(BEAKER_LEFT_X + BEAKER_WIDTH - 25, bridgeY + 20, 25, bridgeHeight);
+
+            // Right arm (in Cu solution)
+            ctx.fillStyle = COLORS.saltBridge;
+            ctx.fillRect(BEAKER_RIGHT_X, bridgeY + 20, 25, bridgeHeight);
+            ctx.strokeRect(BEAKER_RIGHT_X, bridgeY + 20, 25, bridgeHeight);
+
+            // Top tube
+            const tubeWidth = BEAKER_RIGHT_X - (BEAKER_LEFT_X + BEAKER_WIDTH - 25);
+            ctx.fillStyle = COLORS.saltBridge;
+            ctx.fillRect(BEAKER_LEFT_X + BEAKER_WIDTH - 25, bridgeY, tubeWidth, 30);
+            ctx.strokeRect(BEAKER_LEFT_X + BEAKER_WIDTH - 25, bridgeY, tubeWidth, 30);
+
+            // Label
+            ctx.fillStyle = '#333';
+            ctx.font = 'bold 13px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('Salt Bridge (KNO₃)', 
+                (BEAKER_LEFT_X + BEAKER_WIDTH + BEAKER_RIGHT_X) / 2, bridgeY - 10);
+
+            // Ion flow arrows
+            if (isRunning) {
+                ctx.strokeStyle = '#9932CC';
+                ctx.lineWidth = 3;
+                ctx.setLineDash([5, 5]);
+
+                // K+ flow to right (cathode)
+                ctx.beginPath();
+                ctx.moveTo(BEAKER_LEFT_X + BEAKER_WIDTH + 20, bridgeY + 15);
+                ctx.lineTo(BEAKER_RIGHT_X - 20, bridgeY + 15);
+                ctx.stroke();
+
+                // Arrowhead
+                ctx.beginPath();
+                ctx.moveTo(BEAKER_RIGHT_X - 20, bridgeY + 10);
+                ctx.lineTo(BEAKER_RIGHT_X - 20, bridgeY + 20);
+                ctx.lineTo(BEAKER_RIGHT_X - 10, bridgeY + 15);
+                ctx.fill();
+
+                // NO3- flow to left (anode)
+                ctx.strokeStyle = '#32CD32';
+                ctx.beginPath();
+                ctx.moveTo(BEAKER_RIGHT_X - 20, bridgeY + 45);
+                ctx.lineTo(BEAKER_LEFT_X + BEAKER_WIDTH + 20, bridgeY + 45);
+                ctx.stroke();
+
+                // Arrowhead
+                ctx.beginPath();
+                ctx.moveTo(BEAKER_LEFT_X + BEAKER_WIDTH + 20, bridgeY + 40);
+                ctx.lineTo(BEAKER_LEFT_X + BEAKER_WIDTH + 20, bridgeY + 50);
+                ctx.lineTo(BEAKER_LEFT_X + BEAKER_WIDTH + 10, bridgeY + 45);
+                ctx.fill();
+
+                ctx.setLineDash([]);
+
+                // Labels
+                ctx.fillStyle = '#9932CC';
+                ctx.font = 'bold 11px Arial';
+                ctx.fillText('K⁺ → cathode', 
+                    (BEAKER_LEFT_X + BEAKER_WIDTH + BEAKER_RIGHT_X) / 2, bridgeY + 12);
+
+                ctx.fillStyle = '#32CD32';
+                ctx.fillText('← NO₃⁻ anode', 
+                    (BEAKER_LEFT_X + BEAKER_WIDTH + BEAKER_RIGHT_X) / 2, bridgeY + 58);
+            }
+        }
+
+        function drawWireAndComponents() {
+            const wireY = 100;
+            const znTopX = znElectrode.x + znElectrode.width / 2;
+            const cuTopX = cuElectrode.x + cuElectrode.width / 2;
+
+            // Wires
+            ctx.strokeStyle = '#555';
+            ctx.lineWidth = 5;
+
+            // Zn wire
+            ctx.beginPath();
+            ctx.moveTo(znTopX, znElectrode.y);
+            ctx.lineTo(znTopX, wireY);
+            ctx.stroke();
+
+            // Cu wire
+            ctx.beginPath();
+            ctx.moveTo(cuTopX, cuElectrode.y);
+            ctx.lineTo(cuTopX, wireY);
+            ctx.stroke();
+
+            // Connection wire
+            ctx.beginPath();
+            ctx.moveTo(znTopX, wireY);
+            ctx.lineTo(cuTopX, wireY);
+            ctx.stroke();
+
+            // Voltmeter
+            const voltX = (znTopX + cuTopX) / 2;
+            ctx.fillStyle = '#fff';
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.arc(voltX, wireY, 30, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+
+            ctx.fillStyle = '#333';
+            ctx.font = 'bold 16px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('V', voltX, wireY + 6);
+
+            // Digital display
+            ctx.fillStyle = '#000';
+            ctx.fillRect(voltX - 35, wireY - 65, 70, 25);
+            ctx.fillStyle = '#0f0';
+            ctx.font = 'bold 16px monospace';
+            ctx.fillText(voltage.toFixed(2) + 'V', voltX, wireY - 48);
+
+            // Light bulb
+            const bulbX = znTopX + (cuTopX - znTopX) * 0.35;
+
+            // Glow effect
+            if (isRunning) {
+                const gradient = ctx.createRadialGradient(bulbX, wireY, 0, bulbX, wireY, 40);
+                gradient.addColorStop(0, 'rgba(255, 215, 0, 0.8)');
+                gradient.addColorStop(0.5, 'rgba(255, 215, 0, 0.3)');
+                gradient.addColorStop(1, 'rgba(255, 215, 0, 0)');
+                ctx.fillStyle = gradient;
+                ctx.beginPath();
+                ctx.arc(bulbX, wireY, 40, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // Bulb
+            ctx.fillStyle = isRunning ? COLORS.bulbOn : COLORS.bulbOff;
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(bulbX, wireY, 20, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+
+            // Filament
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(bulbX - 10, wireY - 8);
+            ctx.lineTo(bulbX - 5, wireY + 8);
+            ctx.lineTo(bulbX + 5, wireY - 8);
+            ctx.lineTo(bulbX + 10, wireY + 8);
+            ctx.stroke();
+
+            // Electron flow indication
+            if (isRunning) {
+                ctx.fillStyle = '#FFD700';
+                ctx.font = 'bold 13px Arial';
+                ctx.fillText('e⁻ flow', (znTopX + cuTopX) / 2, wireY - 75);
+
+                // Animated arrows
+                const offset = (frameCount % 20) / 20 * (cuTopX - znTopX);
+                ctx.strokeStyle = '#FFD700';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.moveTo(znTopX + 20 + offset, wireY - 50);
+                ctx.lineTo(znTopX + 30 + offset, wireY - 50);
+                ctx.lineTo(znTopX + 28 + offset, wireY - 55);
+                ctx.moveTo(znTopX + 30 + offset, wireY - 50);
+                ctx.lineTo(znTopX + 28 + offset, wireY - 45);
+                ctx.stroke();
+            }
+        }
+
+        function drawElectron(e) {
+            // Glow
+            ctx.fillStyle = 'rgba(255, 215, 0, 0.3)';
+            ctx.beginPath();
+            ctx.arc(e.x, e.y, 8, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Core
+            ctx.fillStyle = COLORS.electron;
+            ctx.beginPath();
+            ctx.arc(e.x, e.y, 5, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Symbol
+            ctx.fillStyle = '#000';
+            ctx.font = 'bold 8px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('-', e.x, e.y + 3);
+        }
+
+        function drawIon(ion, color, label, charge) {
+            // Glow effect for migrating ions
+            if (ion.migrating || ion.targetElectrode) {
+                ctx.fillStyle = color + '40';
+                ctx.beginPath();
+                ctx.arc(ion.x, ion.y, 10, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // Ion body
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.arc(ion.x, ion.y, 7, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+
+            // Label
+            ctx.fillStyle = '#fff';
+            ctx.font = 'bold 9px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(label, ion.x, ion.y + 3);
+
+            // Charge symbol
+            if (charge) {
+                ctx.fillStyle = '#fff';
+                ctx.font = 'bold 7px Arial';
+                ctx.fillText(charge, ion.x + 8, ion.y - 5);
+            }
+        }
+
+        function drawSurfaceAtom(atom, color) {
+            if (!atom.active) return;
+
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.arc(atom.x, atom.y, 6, 0, Math.PI * 2);
+            ctx.fill();
+
+            if (atom.shaking > 0) {
+                ctx.strokeStyle = '#FFD700';
+                ctx.lineWidth = 3;
+                ctx.stroke();
+
+                // Shake effect
+                atom.x += (Math.random() - 0.5) * 2;
+                atom.y += (Math.random() - 0.5) * 2;
+                atom.shaking--;
+            } else {
+                ctx.strokeStyle = '#444';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+            }
+        }
+
+        // Update functions
+        function updateElectrons() {
+            const wireY = 100;
+            const znTopX = znElectrode.x + znElectrode.width / 2;
+            const cuTopX = cuElectrode.x + cuElectrode.width / 2;
+
+            // Spawn electrons from Zn (oxidation)
+            if (isRunning && frameCount % 25 === 0 && znSurfaceAtoms.some(a => a.active)) {
+                electrons.push({
+                    x: znTopX,
+                    y: znElectrode.y,
+                    stage: 'up',
+                    id: electronTransferCount++
+                });
+                updateStats();
+            }
+
+            // Update existing electrons
+            for (let i = electrons.length - 1; i >= 0; i--) {
+                let e = electrons[i];
+                const speed = 2.5;
+
+                if (e.stage === 'up') {
+                    e.y -= speed;
+                    if (e.y <= wireY) {
+                        e.y = wireY;
+                        e.stage = 'across';
+                    }
+                } else if (e.stage === 'across') {
+                    e.x += speed;
+                    if (e.x >= cuTopX) {
+                        e.x = cuTopX;
+                        e.stage = 'down';
+                    }
+                } else if (e.stage === 'down') {
+                    e.y += speed;
+                    if (e.y >= cuElectrode.y) {
+                        electrons.splice(i, 1);
+                        triggerReduction();
+                        continue;
+                    }
+                }
+
+                drawElectron(e);
+            }
+        }
+
+        function triggerOxidation() {
+            let activeAtoms = znSurfaceAtoms.filter(a => a.active);
+            if (activeAtoms.length === 0) return;
+
+            // Prefer atoms at the bottom layers
+            let atom = activeAtoms.sort((a, b) => b.layer - a.layer)[0];
+            atom.shaking = 30;
+
+            setTimeout(() => {
+                if (!atom.active) return;
+                atom.active = false;
+
+                // Create Zn²⁺ ion at atom position
+                znIons.push({
+                    x: atom.x + (Math.random() - 0.5) * 20,
+                    y: atom.y,
+                    vx: (Math.random() - 0.5) * 1,
+                    vy: Math.random() * 0.5 + 0.3,
+                    state: 'free'
+                });
+
+                // Shrink Zn electrode
+                const shrinkAmount = 1.5;
+                if (znElectrode.height > ELECTRODE_HEIGHT_INITIAL - MAX_ELECTRODE_CHANGE) {
+                    znElectrode.height -= shrinkAmount;
+                    znElectrode.y += shrinkAmount;
+                    znMassPercent = 100 - ((ELECTRODE_HEIGHT_INITIAL - znElectrode.height) / MAX_ELECTRODE_CHANGE * 30);
+
+                    // Deactivate atoms that are now "above" the electrode
+                    znSurfaceAtoms.forEach(a => {
+                        if (a.y < znElectrode.y + 10) a.active = false;
+                    });
+                }
+
+                // Decrease voltage slightly as concentration changes
+                voltage = Math.max(0.8, 1.10 - (electronTransferCount * 0.0005));
+                updateStats();
+            }, 600);
+        }
+
+        function triggerReduction() {
+            let freeCuIons = cuIons.filter(ion => ion.state === 'free');
+            if (freeCuIons.length === 0) {
+                // Spawn new Cu ion if all reduced
+                cuIons.push(createCuIon());
+                return;
+            }
+
+            // Find ion closest to electrode surface
+            let targetIon = freeCuIons.reduce((closest, ion) => {
+                let dist = Math.abs(ion.x - cuElectrode.x);
+                return dist < Math.abs(closest.x - cuElectrode.x) ? ion : closest;
+            });
+
+            targetIon.state = 'reducing';
+            targetIon.targetElectrode = true;
+            targetIon.vx = 0;
+            targetIon.vy = 0;
+
+            // Animate ion moving to electrode
+            let steps = 0;
+            const moveInterval = setInterval(() => {
+                if (!cuIons.includes(targetIon)) {
+                    clearInterval(moveInterval);
+                    return;
+                }
+
+                let targetX = cuElectrode.x - 8;
+                let targetY = cuElectrode.y + cuElectrode.height - 10 - Math.random() * 15;
+
+                targetIon.x += (targetX - targetIon.x) * 0.15;
+                targetIon.y += (targetY - targetIon.y) * 0.15;
+
+                if (Math.abs(targetIon.x - targetX) < 3 && Math.abs(targetIon.y - targetY) < 3) {
+                    clearInterval(moveInterval);
+
+                    // Transform to Cu atom
+                    cuSurfaceAtoms.push({
+                        x: targetIon.x,
+                        y: targetIon.y,
+                        active: true,
+                        layer: Math.floor((cuElectrode.y + cuElectrode.height - targetIon.y) / 12)
+                    });
+
+                    // Remove ion
+                    let idx = cuIons.indexOf(targetIon);
+                    if (idx > -1) cuIons.splice(idx, 1);
+
+                    // Grow Cu electrode
+                    const growAmount = 1.5;
+                    if (cuElectrode.height < ELECTRODE_HEIGHT_INITIAL + MAX_ELECTRODE_CHANGE) {
+                        cuElectrode.height += growAmount;
+                        cuElectrode.y -= growAmount;
+                        cuMassPercent = 100 + ((cuElectrode.height - ELECTRODE_HEIGHT_INITIAL) / MAX_ELECTRODE_CHANGE * 30);
+                    }
+
+                    updateStats();
+                }
+            }, 50);
+        }
+
+        function updateIons() {
+            // Zn²⁺ ions - move away from anode
+            for (let ion of znIons) {
+                // Brownian motion with drift away from electrode
+                ion.vx += (Math.random() - 0.4) * 0.1; // Slight drift right
+                ion.vy += (Math.random() - 0.5) * 0.1;
+
+                // Damping
+                ion.vx *= 0.98;
+                ion.vy *= 0.98;
+
+                ion.x += ion.vx;
+                ion.y += ion.vy;
+
+                // Boundaries
+                if (ion.x < BEAKER_LEFT_X + 15) { ion.x = BEAKER_LEFT_X + 15; ion.vx *= -0.5; }
+                if (ion.x > BEAKER_LEFT_X + BEAKER_WIDTH - 15) { ion.x = BEAKER_LEFT_X + BEAKER_WIDTH - 15; ion.vx *= -0.5; }
+                if (ion.y > BEAKER_Y + BEAKER_HEIGHT - 20) { ion.y = BEAKER_Y + BEAKER_HEIGHT - 20; ion.vy *= -0.5; }
+                if (ion.y < BEAKER_Y + BEAKER_HEIGHT - SOLUTION_LEVEL + 20) { ion.y = BEAKER_Y + BEAKER_HEIGHT - SOLUTION_LEVEL + 20; ion.vy *= -0.5; }
+
+                drawIon(ion, COLORS.ZnIon, 'Zn', '2+');
+            }
+
+            // Cu²⁺ ions
+            for (let ion of cuIons) {
+                if (ion.state === 'free') {
+                    ion.x += ion.vx;
+                    ion.y += ion.vy;
+
+                    // Boundaries
+                    if (ion.x < BEAKER_RIGHT_X + 15 || ion.x > BEAKER_RIGHT_X + BEAKER_WIDTH - 15) ion.vx *= -1;
+                    if (ion.y > BEAKER_Y + BEAKER_HEIGHT - 20 || ion.y < BEAKER_Y + BEAKER_HEIGHT - SOLUTION_LEVEL + 20) ion.vy *= -1;
+
+                    // Random walk
+                    if (Math.random() < 0.03) {
+                        ion.vx = (Math.random() - 0.5) * 0.8;
+                        ion.vy = (Math.random() - 0.5) * 0.8;
+                    }
+                }
+
+                drawIon(ion, COLORS.CuIon, 'Cu', '2+');
+            }
+
+            // SO₄²⁻ ions
+            for (let ion of so4Ions) {
+                ion.x += ion.vx;
+                ion.y += ion.vy;
+
+                // Boundaries based on beaker
+                const minX = ion.beaker === 'left' ? BEAKER_LEFT_X + 15 : BEAKER_RIGHT_X + 15;
+                const maxX = ion.beaker === 'left' ? BEAKER_LEFT_X + BEAKER_WIDTH - 15 : BEAKER_RIGHT_X + BEAKER_WIDTH - 15;
+
+                if (ion.x < minX || ion.x > maxX) ion.vx *= -1;
+                if (ion.y > BEAKER_Y + BEAKER_HEIGHT - 20 || ion.y < BEAKER_Y + BEAKER_HEIGHT - SOLUTION_LEVEL + 20) ion.vy *= -1;
+
+                if (Math.random() < 0.02) {
+                    ion.vx = (Math.random() - 0.5) * 0.4;
+                    ion.vy = (Math.random() - 0.5) * 0.4;
+                }
+
+                drawIon(ion, COLORS.SO4_ion, 'SO₄', '2-');
+            }
+        }
+
+        function updateSaltBridgeIons() {
+            const bridgeLeft = BEAKER_LEFT_X + BEAKER_WIDTH - 25;
+            const bridgeRight = BEAKER_RIGHT_X + 25;
+            const bridgeTop = BEAKER_Y - 60;
+            const bridgeBottom = BEAKER_Y + 20;
+
+            // K⁺ ions migrate to cathode (right beaker)
+            for (let ion of kIons) {
+                if (isRunning && ion.inBridge && !ion.migrating && Math.random() < 0.02) {
+                    ion.migrating = true;
+                    ion.inBridge = false;
+                    ion.targetX = BEAKER_RIGHT_X + 30 + Math.random() * (BEAKER_WIDTH - 60);
+                    ion.targetY = BEAKER_Y + 60 + Math.random() * (SOLUTION_LEVEL - 80);
+                }
+
+                if (ion.migrating) {
+                    // Move through bridge then into solution
+                    if (ion.x < bridgeRight - 10) {
+                        // Moving through bridge
+                        ion.x += 1.5;
+                        ion.y = bridgeTop + 15 + Math.sin(ion.x * 0.1) * 5;
+                    } else {
+                        // Entering solution
+                        ion.x += (ion.targetX - ion.x) * 0.05;
+                        ion.y += (ion.targetY - ion.y) * 0.05;
+
+                        if (Math.abs(ion.x - ion.targetX) < 5) {
+                            ion.migrating = false;
+                            ion.inSolution = true;
+                        }
+                    }
+                } else if (ion.inSolution) {
+                    // Float in solution
+                    ion.x += (Math.random() - 0.5) * 0.5;
+                    ion.y += (Math.random() - 0.5) * 0.5;
+
+                    // Keep in right beaker
+                    if (ion.x < BEAKER_RIGHT_X + 15) ion.x = BEAKER_RIGHT_X + 15;
+                    if (ion.x > BEAKER_RIGHT_X + BEAKER_WIDTH - 15) ion.x = BEAKER_RIGHT_X + BEAKER_WIDTH - 15;
+                } else {
+                    // Idle in bridge
+                    ion.y = bridgeTop + 10 + (ion.id / 8) * 20;
+                    ion.x = bridgeLeft + 10 + (ion.id % 2) * 20;
+                }
+
+                drawIon(ion, COLORS.K_ion, 'K', '+');
+            }
+
+            // NO₃⁻ ions migrate to anode (left beaker)
+            for (let ion of no3Ions) {
+                if (isRunning && ion.inBridge && !ion.migrating && Math.random() < 0.02) {
+                    ion.migrating = true;
+                    ion.inBridge = false;
+                    ion.targetX = BEAKER_LEFT_X + 30 + Math.random() * (BEAKER_WIDTH - 60);
+                    ion.targetY = BEAKER_Y + 60 + Math.random() * (SOLUTION_LEVEL - 80);
+                }
+
+                if (ion.migrating) {
+                    if (ion.x > bridgeLeft + 10) {
+                        // Moving through bridge
+                        ion.x -= 1.5;
+                        ion.y = bridgeTop + 35 + Math.sin(ion.x * 0.1) * 5;
+                    } else {
+                        // Entering solution
+                        ion.x += (ion.targetX - ion.x) * 0.05;
+                        ion.y += (ion.targetY - ion.y) * 0.05;
+
+                        if (Math.abs(ion.x - ion.targetX) < 5) {
+                            ion.migrating = false;
+                            ion.inSolution = true;
+                        }
+                    }
+                } else if (ion.inSolution) {
+                    ion.x += (Math.random() - 0.5) * 0.5;
+                    ion.y += (Math.random() - 0.5) * 0.5;
+
+                    if (ion.x < BEAKER_LEFT_X + 15) ion.x = BEAKER_LEFT_X + 15;
+                    if (ion.x > BEAKER_LEFT_X + BEAKER_WIDTH - 15) ion.x = BEAKER_LEFT_X + BEAKER_WIDTH - 15;
+                } else {
+                    ion.y = bridgeTop + 10 + (ion.id / 8) * 20;
+                    ion.x = bridgeRight - 30 + (ion.id % 2) * 20;
+                }
+
+                drawIon(ion, COLORS.NO3_ion, 'NO₃', '-');
+            }
+        }
+
+        function drawLabels() {
+            // Anode/Cathode labels
+            ctx.fillStyle = '#dc3545';
+            ctx.font = 'bold 16px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('⚡ ANODE (Negative)', BEAKER_LEFT_X + BEAKER_WIDTH / 2, BEAKER_Y - 90);
+
+            ctx.fillStyle = '#28a745';
+            ctx.font = 'bold 16px Arial';
+            ctx.fillText('⚡ CATHODE (Positive)', BEAKER_RIGHT_X + BEAKER_WIDTH / 2, BEAKER_Y - 90);
+
+            // Process descriptions
+            if (isRunning) {
+                ctx.fillStyle = 'rgba(220, 53, 69, 0.1)';
+                ctx.fillRect(BEAKER_LEFT_X - 10, BEAKER_Y + BEAKER_HEIGHT + 30, BEAKER_WIDTH + 20, 70);
+                ctx.strokeStyle = '#dc3545';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(BEAKER_LEFT_X - 10, BEAKER_Y + BEAKER_HEIGHT + 30, BEAKER_WIDTH + 20, 70);
+
+                ctx.fillStyle = '#dc3545';
+                ctx.font = 'bold 13px Arial';
+                ctx.fillText('OXIDATION', BEAKER_LEFT_X + BEAKER_WIDTH / 2, BEAKER_Y + BEAKER_HEIGHT + 50);
+                ctx.fillStyle = '#333';
+                ctx.font = '11px Arial';
+                ctx.fillText('Zn → Zn²⁺ + 2e⁻', BEAKER_LEFT_X + BEAKER_WIDTH / 2, BEAKER_Y + BEAKER_HEIGHT + 68);
+                ctx.fillText('Electrode corrodes', BEAKER_LEFT_X + BEAKER_WIDTH / 2, BEAKER_Y + BEAKER_HEIGHT + 85);
+
+                ctx.fillStyle = 'rgba(40, 167, 69, 0.1)';
+                ctx.fillRect(BEAKER_RIGHT_X - 10, BEAKER_Y + BEAKER_HEIGHT + 30, BEAKER_WIDTH + 20, 70);
+                ctx.strokeStyle = '#28a745';
+                ctx.strokeRect(BEAKER_RIGHT_X - 10, BEAKER_Y + BEAKER_HEIGHT + 30, BEAKER_WIDTH + 20, 70);
+
+                ctx.fillStyle = '#28a745';
+                ctx.font = 'bold 13px Arial';
+                ctx.fillText('REDUCTION', BEAKER_RIGHT_X + BEAKER_WIDTH / 2, BEAKER_Y + BEAKER_HEIGHT + 50);
+                ctx.fillStyle = '#333';
+                ctx.fillText('Cu²⁺ + 2e⁻ → Cu', BEAKER_RIGHT_X + BEAKER_WIDTH / 2, BEAKER_Y + BEAKER_HEIGHT + 68);
+                ctx.fillText('Electrode grows', BEAKER_RIGHT_X + BEAKER_WIDTH / 2, BEAKER_Y + BEAKER_HEIGHT + 85);
+            }
+        }
+
+        function render() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Calculate charge buildup for display
+            let leftCharge = znIons.length * 2 - no3Ions.filter(i => i.inSolution).length;
+            let rightCharge = cuIons.length * 2 - kIons.filter(i => i.inSolution).length;
+
+            drawSaltBridge();
+            drawBeaker(BEAKER_LEFT_X, BEAKER_Y, BEAKER_WIDTH, BEAKER_HEIGHT, COLORS.solutionZn, 'ZnSO₄ Solution', leftCharge);
+            drawBeaker(BEAKER_RIGHT_X, BEAKER_Y, BEAKER_WIDTH, BEAKER_HEIGHT, COLORS.solutionCu, 'CuSO₄ Solution', rightCharge);
+
+            drawElectrode(znElectrode, COLORS.ZnSolid, 'Zn', true);
+            drawElectrode(cuElectrode, COLORS.CuSolid, 'Cu', false);
+
+            drawWireAndComponents();
+
+            updateElectrons();
+            updateIons();
+            updateSaltBridgeIons();
+
+            // Draw surface atoms
+            for (let atom of znSurfaceAtoms) drawSurfaceAtom(atom, COLORS.ZnSolid);
+            for (let atom of cuSurfaceAtoms) drawSurfaceAtom(atom, COLORS.CuSolid);
+
+            drawLabels();
+
+            // Periodic oxidation trigger
+            if (isRunning && frameCount % 50 === 0 && znSurfaceAtoms.some(a => a.active)) {
+                triggerOxidation();
+            }
+
+            // Maintain Cu ion concentration
+            if (isRunning && frameCount % 100 === 0 && cuIons.length < 15) {
+                cuIons.push(createCuIon());
+            }
+
+            frameCount++;
+        }
+
+        function animate() {
+            if (isRunning) {
+                render();
+                animationId = requestAnimationFrame(animate);
+            }
+        }
+
+        // Event listeners
+        startBtn.addEventListener('click', () => {
+            if (!isRunning) {
+                isRunning = true;
+                startBtn.disabled = true;
+                pauseBtn.disabled = false;
+                animate();
+            }
+        });
+
+        pauseBtn.addEventListener('click', () => {
+            isRunning = false;
+            startBtn.disabled = false;
+            pauseBtn.disabled = true;
+            if (animationId) cancelAnimationFrame(animationId);
+            render();
+        });
+
+        resetBtn.addEventListener('click', () => {
+            isRunning = false;
+            startBtn.disabled = false;
+            pauseBtn.disabled = true;
+            if (animationId) cancelAnimationFrame(animationId);
+            initializeParticles();
+            render();
+        });
+
+        // Initialize
+        initializeParticles();
+        render();
+    </script>
+</body>
+</html>
